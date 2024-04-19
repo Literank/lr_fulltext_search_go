@@ -1,22 +1,35 @@
 package main
 
 import (
-	"net/http"
+	"fmt"
 
-	"github.com/gin-gonic/gin"
+	"literank.com/fulltext-books/adapter"
+	"literank.com/fulltext-books/application"
+	"literank.com/fulltext-books/infrastructure/config"
 )
 
+const configFileName = "config.yml"
+
 func main() {
-	// Create a new Gin router
-	router := gin.Default()
+	// Read the config
+	c, err := config.Parse(configFileName)
+	if err != nil {
+		panic(err)
+	}
 
-	// Define a route for the homepage
-	router.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status": "ok",
-		})
-	})
+	// Prepare dependencies
+	wireHelper, err := application.NewWireHelper(c)
+	if err != nil {
+		panic(err)
+	}
 
-	// Run the server, default port is 8080
-	router.Run()
+	// Build main router
+	r, err := adapter.MakeRouter(wireHelper)
+	if err != nil {
+		panic(err)
+	}
+	// Run the server on the specified port
+	if err := r.Run(fmt.Sprintf(":%d", c.App.Port)); err != nil {
+		panic(err)
+	}
 }
