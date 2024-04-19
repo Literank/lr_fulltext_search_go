@@ -24,3 +24,7 @@ func NewBookOperator(b gateway.BookManager) *BookOperator {
 func (o *BookOperator) CreateBook(ctx context.Context, b *model.Book) (string, error) {
 	return o.bookManager.IndexBook(ctx, b)
 }
+
+func (o *BookOperator) SearchBooks(ctx context.Context, query string) ([]*model.Book, error) {
+	return o.bookManager.SearchBooks(ctx, query)
+}

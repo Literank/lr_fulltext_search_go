@@ -12,4 +12,5 @@ import (
 // BookManager manages all books
 type BookManager interface {
 	IndexBook(ctx context.Context, b *model.Book) (string, error)
+	SearchBooks(ctx context.Context, query string) ([]*model.Book, error)
 }

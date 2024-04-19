@@ -5,8 +5,11 @@ package search
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/elastic/go-elasticsearch/v8/typedapi/core/search"
+	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
 
 	"literank.com/fulltext-books/domain/model"
 )
@@ -41,4 +44,30 @@ func (s *ElasticSearchEngine) IndexBook(ctx context.Context, b *model.Book) (str
 		return "", err
 	}
 	return resp.Id_, nil
+}
+
+// SearchBooks search from ES and return a list of books
+func (s *ElasticSearchEngine) SearchBooks(ctx context.Context, query string) ([]*model.Book, error) {
+	resp, err := s.client.Search().Index(INDEX_BOOK).
+		Request(&search.Request{
+			Query: &types.Query{
+				MultiMatch: &types.MultiMatchQuery{
+					Query:  query,
+					Fields: []string{"title", "author", "content"},
+				},
+			},
+		}).
+		Do(ctx)
+	if err != nil {
+		return nil, err
+	}
+	books := make([]*model.Book, 0)
+	for _, hit := range resp.Hits.Hits {
+		var b model.Book
+		if err := json.Unmarshal(hit.Source_, &b); err != nil {
+			return nil, err
+		}
+		books = append(books, &b)
+	}
+	return books, nil
 }

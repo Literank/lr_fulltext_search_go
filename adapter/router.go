@@ -14,6 +14,8 @@ import (
 	"literank.com/fulltext-books/domain/model"
 )
 
+const fieldQuery = "q"
+
 // RestHandler handles all restful requests
 type RestHandler struct {
 	bookOperator *executor.BookOperator
@@ -31,6 +33,7 @@ func MakeRouter(wireHelper *application.WireHelper) (*gin.Engine, error) {
 	// Create a new Gin router
 	r := gin.Default()
 
+	r.GET("/books", rest.searchBooks)
 	r.POST("/books", rest.createBook)
 	return r, nil
 }
@@ -50,4 +53,14 @@ func (r *RestHandler) createBook(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"id": bookID})
+}
+
+func (r *RestHandler) searchBooks(c *gin.Context) {
+	books, err := r.bookOperator.SearchBooks(c, c.Query(fieldQuery))
+	if err != nil {
+		fmt.Printf("Failed to search books: %v\n", err)
+		c.JSON(http.StatusNotFound, gin.H{"error": "failed to search books"})
+		return
+	}
+	c.JSON(http.StatusOK, books)
 }
