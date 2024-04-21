@@ -14,16 +14,15 @@ import (
 	"literank.com/fulltext-books/domain/model"
 )
 
-const INDEX_BOOK = "book_idx"
-
 // ElasticSearchEngine runs all index/search operations
 type ElasticSearchEngine struct {
 	client   *elasticsearch.TypedClient
+	index    string
 	pageSize int
 }
 
 // NewEngine constructs a new ElasticSearchEngine
-func NewEngine(address string, pageSize int) (*ElasticSearchEngine, error) {
+func NewEngine(address, index string, pageSize int) (*ElasticSearchEngine, error) {
 	cfg := elasticsearch.Config{
 		Addresses: []string{address},
 	}
@@ -32,12 +31,12 @@ func NewEngine(address string, pageSize int) (*ElasticSearchEngine, error) {
 		return nil, err
 	}
 	// Create the index
-	return &ElasticSearchEngine{client, pageSize}, nil
+	return &ElasticSearchEngine{client, index, pageSize}, nil
 }
 
 // IndexBook indexes a new book
 func (s *ElasticSearchEngine) IndexBook(ctx context.Context, b *model.Book) (string, error) {
-	resp, err := s.client.Index(INDEX_BOOK).
+	resp, err := s.client.Index(s.index).
 		Request(b).
 		Do(ctx)
 	if err != nil {
@@ -48,7 +47,7 @@ func (s *ElasticSearchEngine) IndexBook(ctx context.Context, b *model.Book) (str
 
 // SearchBooks search from ES and return a list of books
 func (s *ElasticSearchEngine) SearchBooks(ctx context.Context, query string) ([]*model.Book, error) {
-	resp, err := s.client.Search().Index(INDEX_BOOK).
+	resp, err := s.client.Search().Index(s.index).
 		Request(&search.Request{
 			Query: &types.Query{
 				MultiMatch: &types.MultiMatchQuery{

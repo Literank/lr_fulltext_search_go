@@ -16,7 +16,7 @@ type WireHelper struct {
 
 // NewWireHelper constructs a new WireHelper
 func NewWireHelper(c *config.Config) (*WireHelper, error) {
-	engine, err := search.NewEngine(c.Search.Address, c.App.PageSize)
+	engine, err := search.NewEngine(c.Search.Address, c.Search.Index, c.App.PageSize)
 	if err != nil {
 		return nil, err
 	}

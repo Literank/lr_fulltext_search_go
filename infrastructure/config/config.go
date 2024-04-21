@@ -19,6 +19,7 @@ type Config struct {
 // SearchConfig is the configuration of search engines.
 type SearchConfig struct {
 	Address string `json:"address" yaml:"address"`
+	Index   string `json:"index" yaml:"index"`
 }
 
 // ApplicationConfig is the configuration of main app.
